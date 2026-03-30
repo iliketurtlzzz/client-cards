@@ -4,27 +4,69 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider, useTheme } from "./theme-context";
 import { useState, createContext, useContext, ReactNode } from "react";
-import { clients, Client } from "./data";
+import { defaultClients, Client } from "./data";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
-/* ── Client selection context ── */
-const ClientContext = createContext<{
+/* ── Client context with mutable state ── */
+interface ClientContextValue {
+  clients: Client[];
   activeClient: Client;
   setActiveClientId: (id: string) => void;
-}>({
-  activeClient: clients[0],
+  addClient: (c: Client) => void;
+  updateClient: (c: Client) => void;
+  deleteClient: (id: string) => void;
+  showWizard: boolean;
+  setShowWizard: (v: boolean) => void;
+  editingClientId: string | null;
+  setEditingClientId: (id: string | null) => void;
+}
+
+const ClientContext = createContext<ClientContextValue>({
+  clients: defaultClients,
+  activeClient: defaultClients[0],
   setActiveClientId: () => {},
+  addClient: () => {},
+  updateClient: () => {},
+  deleteClient: () => {},
+  showWizard: false,
+  setShowWizard: () => {},
+  editingClientId: null,
+  setEditingClientId: () => {},
 });
 
-export const useActiveClient = () => useContext(ClientContext);
+export const useClientHub = () => useContext(ClientContext);
 
-function ClientProvider({ children }: { children: ReactNode }) {
-  const [activeId, setActiveId] = useState(clients[0].id);
+function ClientHubProvider({ children }: { children: ReactNode }) {
+  const [clients, setClients] = useState<Client[]>(defaultClients);
+  const [activeId, setActiveId] = useState(defaultClients[0].id);
+  const [showWizard, setShowWizard] = useState(false);
+  const [editingClientId, setEditingClientId] = useState<string | null>(null);
+
   const activeClient = clients.find((c) => c.id === activeId) || clients[0];
+
+  const addClient = (c: Client) => {
+    setClients((prev) => [...prev, c]);
+    setActiveId(c.id);
+  };
+
+  const updateClient = (c: Client) => {
+    setClients((prev) => prev.map((x) => (x.id === c.id ? c : x)));
+  };
+
+  const deleteClient = (id: string) => {
+    setClients((prev) => {
+      const next = prev.filter((x) => x.id !== id);
+      if (activeId === id && next.length > 0) setActiveId(next[0].id);
+      return next;
+    });
+  };
+
   return (
-    <ClientContext.Provider value={{ activeClient, setActiveClientId: setActiveId }}>
+    <ClientContext.Provider
+      value={{ clients, activeClient, setActiveClientId: setActiveId, addClient, updateClient, deleteClient, showWizard, setShowWizard, editingClientId, setEditingClientId }}
+    >
       {children}
     </ClientContext.Provider>
   );
@@ -33,66 +75,32 @@ function ClientProvider({ children }: { children: ReactNode }) {
 /* ── Sidebar ── */
 function Sidebar() {
   const { theme, toggleTheme } = useTheme();
-  const { activeClient, setActiveClientId } = useActiveClient();
+  const { clients, activeClient, setActiveClientId, setShowWizard, setEditingClientId } = useClientHub();
   const dark = theme === "dark";
 
-  const statusDot: Record<string, string> = {
-    Active: "bg-emerald-400",
-    Onboarding: "bg-amber-400",
-    Paused: "bg-slate-400",
-  };
+  const statusDot: Record<string, string> = { Active: "bg-emerald-400", Onboarding: "bg-amber-400", Paused: "bg-slate-400" };
 
   return (
-    <aside
-      className={`fixed left-0 top-0 z-40 flex h-screen w-64 flex-col ${
-        dark
-          ? "bg-[#0d1117] border-r border-[#1e293b]"
-          : "bg-white border-r border-slate-200"
-      }`}
-    >
+    <aside className={`fixed left-0 top-0 z-40 flex h-screen w-64 flex-col ${dark ? "bg-[#0d1117] border-r border-[#1e293b]" : "bg-white border-r border-slate-200"}`}>
       <div className="gradient-accent h-[2px] w-full" />
 
-      {/* Header */}
-      <div
-        className={`flex h-14 items-center justify-between border-b px-4 ${
-          dark ? "border-[#1e293b]" : "border-slate-200"
-        }`}
-      >
+      <div className={`flex h-14 items-center justify-between border-b px-4 ${dark ? "border-[#1e293b]" : "border-slate-200"}`}>
         <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 font-bold text-[11px] text-white">
-            MW
-          </div>
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 font-bold text-[11px] text-white">MW</div>
           <div>
-            <h1 className={`text-xs font-semibold tracking-wide ${dark ? "text-white" : "text-slate-900"}`}>
-              Marketwake
-            </h1>
-            <p className={`text-[9px] uppercase tracking-widest ${dark ? "text-slate-500" : "text-slate-400"}`}>
-              Client Hub
-            </p>
+            <h1 className={`text-xs font-semibold tracking-wide ${dark ? "text-white" : "text-slate-900"}`}>Marketwake</h1>
+            <p className={`text-[9px] uppercase tracking-widest ${dark ? "text-slate-500" : "text-slate-400"}`}>Client Hub</p>
           </div>
         </div>
-        <button
-          onClick={toggleTheme}
-          className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
-            dark
-              ? "bg-[#1a2234] text-slate-400 hover:text-yellow-400 hover:bg-[#1e293b]"
-              : "bg-slate-100 text-slate-500 hover:text-amber-500 hover:bg-slate-200"
-          }`}
-          title={dark ? "Switch to light mode" : "Switch to dark mode"}
-        >
+        <button onClick={toggleTheme} className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${dark ? "bg-[#1a2234] text-slate-400 hover:text-yellow-400 hover:bg-[#1e293b]" : "bg-slate-100 text-slate-500 hover:text-amber-500 hover:bg-slate-200"}`} title={dark ? "Light mode" : "Dark mode"}>
           {dark ? (
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
-            </svg>
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
           ) : (
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
-            </svg>
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
           )}
         </button>
       </div>
 
-      {/* Client list */}
       <div className={`px-3 pt-3 pb-1 ${dark ? "text-slate-500" : "text-slate-400"}`}>
         <p className="text-[10px] font-semibold uppercase tracking-widest">Clients</p>
       </div>
@@ -100,39 +108,11 @@ function Sidebar() {
         {clients.map((client) => {
           const isActive = client.id === activeClient.id;
           return (
-            <button
-              key={client.id}
-              onClick={() => setActiveClientId(client.id)}
-              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
-                isActive
-                  ? dark
-                    ? "bg-blue-600/15 border border-blue-500/20"
-                    : "bg-blue-50 border border-blue-200"
-                  : dark
-                    ? "hover:bg-[#1a2234] border border-transparent"
-                    : "hover:bg-slate-50 border border-transparent"
-              }`}
-            >
-              <div
-                className={`flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br ${client.color} text-xs font-bold text-white shrink-0`}
-              >
-                {client.initials}
-              </div>
+            <button key={client.id} onClick={() => setActiveClientId(client.id)} className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${isActive ? (dark ? "bg-blue-600/15 border border-blue-500/20" : "bg-blue-50 border border-blue-200") : (dark ? "hover:bg-[#1a2234] border border-transparent" : "hover:bg-slate-50 border border-transparent")}`}>
+              <div className={`flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br ${client.color} text-xs font-bold text-white shrink-0`}>{client.initials}</div>
               <div className="flex-1 min-w-0">
-                <p
-                  className={`text-sm font-medium truncate ${
-                    isActive
-                      ? "text-blue-500"
-                      : dark
-                        ? "text-slate-300"
-                        : "text-slate-700"
-                  }`}
-                >
-                  {client.name}
-                </p>
-                <p className={`text-[10px] truncate ${dark ? "text-slate-500" : "text-slate-400"}`}>
-                  {client.industry}
-                </p>
+                <p className={`text-sm font-medium truncate ${isActive ? "text-blue-500" : dark ? "text-slate-300" : "text-slate-700"}`}>{client.name}</p>
+                <p className={`text-[10px] truncate ${dark ? "text-slate-500" : "text-slate-400"}`}>{client.industry}</p>
               </div>
               <span className={`h-2 w-2 rounded-full shrink-0 ${statusDot[client.status]}`} />
             </button>
@@ -140,33 +120,23 @@ function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom */}
       <div className={`border-t p-3 ${dark ? "border-[#1e293b]" : "border-slate-200"}`}>
-        <div className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium cursor-pointer transition-colors ${
-          dark
-            ? "text-blue-400 hover:bg-[#1a2234]"
-            : "text-blue-600 hover:bg-slate-50"
-        }`}>
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
+        <button onClick={() => { setEditingClientId(null); setShowWizard(true); }} className={`flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${dark ? "text-blue-400 hover:bg-[#1a2234]" : "text-blue-600 hover:bg-slate-50"}`}>
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
           Add Client
-        </div>
+        </button>
       </div>
     </aside>
   );
 }
 
-/* ── Shell ── */
 function AppShell({ children }: { children: ReactNode }) {
   const { theme } = useTheme();
   const dark = theme === "dark";
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <main className={`ml-64 flex-1 min-h-screen ${dark ? "bg-[#0a0f1a]" : "bg-slate-50"}`}>
-        {children}
-      </main>
+      <main className={`ml-64 flex-1 min-h-screen ${dark ? "bg-[#0a0f1a]" : "bg-slate-50"}`}>{children}</main>
     </div>
   );
 }
@@ -180,9 +150,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
-          <ClientProvider>
+          <ClientHubProvider>
             <AppShell>{children}</AppShell>
-          </ClientProvider>
+          </ClientHubProvider>
         </ThemeProvider>
       </body>
     </html>

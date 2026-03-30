@@ -21,6 +21,13 @@ export interface Service {
   details: string;
 }
 
+export interface TeamNote {
+  id: string;
+  author: string;
+  date: string;
+  text: string;
+}
+
 export interface Client {
   id: string;
   name: string;
@@ -45,12 +52,38 @@ export interface Client {
   differentiators: string[];
   writingRules: string[];
   doNotSay: string[];
-  targetKeywords: string[];
-  competitorUrls: string[];
-  seoNotes: string;
+  teamNotes: TeamNote[];
 }
 
-export const clients: Client[] = [
+export const industryOptions = [
+  "Healthcare",
+  "SaaS/Tech",
+  "Ecommerce",
+  "Professional Services",
+  "Home Services",
+  "Legal",
+  "Real Estate",
+  "Food & Beverage",
+  "Fitness/Wellness",
+  "Education",
+  "Digital Marketing Agency",
+  "Premium Home Goods",
+  "Hospitality",
+  "Other",
+];
+
+export const gradientOptions = [
+  "from-blue-500 to-purple-600",
+  "from-teal-400 to-cyan-500",
+  "from-orange-500 to-red-500",
+  "from-violet-500 to-indigo-600",
+  "from-emerald-500 to-teal-500",
+  "from-pink-500 to-rose-500",
+  "from-amber-500 to-orange-500",
+  "from-sky-500 to-blue-600",
+];
+
+export const defaultClients: Client[] = [
   {
     id: "marketwake",
     name: "Marketwake",
@@ -178,9 +211,11 @@ export const clients: Client[] = [
       "Think outside the box",
     ],
 
-    targetKeywords: ["digital marketing agency atlanta", "SEO services atlanta", "PPC management", "content marketing strategy", "B2B marketing agency", "AEO optimization", "AI search optimization"],
-    competitorUrls: ["https://cardinaldigitalmarketing.com", "https://lyfemarketing.com", "https://thrivedigital.com"],
-    seoNotes: "Focus on long-tail B2B keywords. Prioritize AEO (Answer Engine Optimization) content for AI search visibility. All blog posts need FAQ schema. Target featured snippets for comparison and how-to queries.",
+    teamNotes: [
+      { id: "tn-1", author: "Bin Cochran", date: "2026-03-15", text: "Q2 content calendar approved. Prioritizing AEO playbook series -- 4 blog posts, 2 LinkedIn carousels, 1 webinar." },
+      { id: "tn-2", author: "Sarah Mitchell", date: "2026-03-10", text: "Service pages need updating for AI search optimization. Coordinate with dev team on schema markup." },
+      { id: "tn-3", author: "Jake Rodriguez", date: "2026-02-28", text: "Client wants to test short-form video on LinkedIn. Starting with 3 pilot videos in March." },
+    ],
   },
 
   {
@@ -207,12 +242,7 @@ export const clients: Client[] = [
         companySize: "N/A",
         industry: "Residential, Buckhead / Sandy Springs area",
         ageRange: "30-50",
-        painPoints: [
-          "Finding a dentist the whole family can see",
-          "Managing dental anxiety in children",
-          "Understanding insurance coverage and out-of-pocket costs",
-          "Fitting appointments into a busy family schedule",
-        ],
+        painPoints: ["Finding a dentist the whole family can see", "Managing dental anxiety in children", "Understanding insurance coverage and out-of-pocket costs", "Fitting appointments into a busy family schedule"],
         contentPreferences: ["Social media tips and short videos", "Email appointment reminders", "Blog posts about kids' dental health", "Google Business Profile posts"],
       },
       {
@@ -222,12 +252,7 @@ export const clients: Client[] = [
         companySize: "N/A",
         industry: "Tech, finance, consulting in Atlanta",
         ageRange: "25-35",
-        painPoints: [
-          "Wants a modern, tech-forward dental experience",
-          "Interested in cosmetic dentistry (whitening, aligners)",
-          "Needs evening or weekend appointment availability",
-          "Values online booking and digital communication",
-        ],
+        painPoints: ["Wants a modern, tech-forward dental experience", "Interested in cosmetic dentistry (whitening, aligners)", "Needs evening or weekend appointment availability", "Values online booking and digital communication"],
         contentPreferences: ["Instagram before/after content", "Quick-read blog posts", "Online booking convenience messaging", "Review-driven social proof"],
       },
       {
@@ -237,12 +262,7 @@ export const clients: Client[] = [
         companySize: "N/A",
         industry: "Various",
         ageRange: "25-65",
-        painPoints: [
-          "Fear of pain or discomfort during procedures",
-          "Embarrassment about current dental condition",
-          "Previous negative dental experiences",
-          "Wants a judgment-free, gentle environment",
-        ],
+        painPoints: ["Fear of pain or discomfort during procedures", "Embarrassment about current dental condition", "Previous negative dental experiences", "Wants a judgment-free, gentle environment"],
         contentPreferences: ["Reassuring blog content about sedation options", "Patient testimonial videos", "Behind-the-scenes office tour content", "Empathetic email communications"],
       },
       {
@@ -252,12 +272,7 @@ export const clients: Client[] = [
         companySize: "N/A",
         industry: "N/A",
         ageRange: "60+",
-        painPoints: [
-          "Dental implants and denture options",
-          "Medicare/insurance navigation for dental care",
-          "Mobility and accessibility concerns",
-          "Managing dental health alongside other health conditions",
-        ],
+        painPoints: ["Dental implants and denture options", "Medicare/insurance navigation for dental care", "Mobility and accessibility concerns", "Managing dental health alongside other health conditions"],
         contentPreferences: ["Informational blog posts", "Print-friendly guides", "Phone-based communication", "Community event participation"],
       },
     ],
@@ -311,9 +326,10 @@ export const clients: Client[] = [
       "You need to... (prescriptive -- use 'we recommend')",
     ],
 
-    targetKeywords: ["dentist buckhead", "family dentist atlanta", "teeth whitening atlanta", "pediatric dentist buckhead", "invisalign atlanta", "emergency dentist buckhead"],
-    competitorUrls: ["https://buckheaddentalpartners.com", "https://atlantadentalgroup.com"],
-    seoNotes: "Strong local SEO focus. Google Business Profile optimization is critical. Need consistent NAP across all directories. Target 'near me' search variations. All service pages need LocalBusiness schema.",
+    teamNotes: [
+      { id: "tn-pd-1", author: "Sarah Mitchell", date: "2026-03-20", text: "Dr. Chen approved the April blog calendar. 2 posts on kids' dental health, 1 on Invisalign for adults." },
+      { id: "tn-pd-2", author: "Bin Cochran", date: "2026-03-05", text: "GBP optimization complete. Need to follow up on review response strategy -- Dr. Chen wants to personally respond to all reviews." },
+    ],
   },
 
   {
@@ -340,12 +356,7 @@ export const clients: Client[] = [
         companySize: "Household income $200K+",
         industry: "Residential, upscale neighborhoods",
         ageRange: "35-65",
-        painPoints: [
-          "Wants a premium fire experience, not gas-station firewood",
-          "Hosting guests and wants impressive outdoor ambiance",
-          "Tired of smoky, hard-to-light fires",
-          "Values convenience -- delivery and stacking service",
-        ],
+        painPoints: ["Wants a premium fire experience, not gas-station firewood", "Hosting guests and wants impressive outdoor ambiance", "Tired of smoky, hard-to-light fires", "Values convenience -- delivery and stacking service"],
         contentPreferences: ["Beautiful lifestyle photography", "Email offers and seasonal campaigns", "Instagram content", "Blog posts about entertaining"],
       },
       {
@@ -355,12 +366,7 @@ export const clients: Client[] = [
         companySize: "Single or multi-location hospitality",
         industry: "Restaurants, hotels, event venues",
         ageRange: "30-55",
-        painPoints: [
-          "Needs consistent, high-quality cooking wood supply",
-          "Fire flavor is part of the brand and menu identity",
-          "Reliability of delivery on a commercial schedule",
-          "Food safety and wood quality certifications",
-        ],
+        painPoints: ["Needs consistent, high-quality cooking wood supply", "Fire flavor is part of the brand and menu identity", "Reliability of delivery on a commercial schedule", "Food safety and wood quality certifications"],
         contentPreferences: ["B2B outreach and case studies", "Product spec sheets", "LinkedIn content", "Trade publication features"],
       },
       {
@@ -370,12 +376,7 @@ export const clients: Client[] = [
         companySize: "N/A",
         industry: "Various",
         ageRange: "28-60",
-        painPoints: [
-          "Looking for a unique, luxury gift",
-          "Wants beautiful packaging and presentation",
-          "Needs reliable delivery timing for occasions",
-          "Wants a memorable, shareable unboxing experience",
-        ],
+        painPoints: ["Looking for a unique, luxury gift", "Wants beautiful packaging and presentation", "Needs reliable delivery timing for occasions", "Wants a memorable, shareable unboxing experience"],
         contentPreferences: ["Gift guide blog posts", "Holiday email campaigns", "Social media unboxing content", "Google Shopping and product listings"],
       },
     ],
@@ -429,9 +430,10 @@ export const clients: Client[] = [
       "Gas fireplace comparisons (don't disparage other fire types)",
     ],
 
-    targetKeywords: ["kiln dried firewood delivery", "premium firewood", "cooking wood for pizza oven", "firewood subscription", "best firewood delivery", "oak firewood delivery"],
-    competitorUrls: ["https://woodchucksplitter.com", "https://firewoodracks.com"],
-    seoNotes: "E-commerce SEO is the priority. Product pages need rich schema (Product, Review, FAQ). Target long-tail 'best [wood type] for [use case]' keywords. Blog content supports top-of-funnel seasonal searches. Google Shopping feed optimization critical for gift buyers.",
+    teamNotes: [
+      { id: "tn-ce-1", author: "Jake Rodriguez", date: "2026-03-22", text: "Fall/winter email campaign planning starts in June. Michael wants to test a 'Fire Season Kickoff' series with early-bird subscription pricing." },
+      { id: "tn-ce-2", author: "Bin Cochran", date: "2026-03-01", text: "Cooking wood vertical is growing fast. Need dedicated landing page and B2B case studies for restaurant buyers." },
+    ],
   },
 
   {
@@ -458,12 +460,7 @@ export const clients: Client[] = [
         companySize: "50-500 employees",
         industry: "Software, Technology",
         ageRange: "28-42",
-        painPoints: [
-          "Existing PM tools are designed for PMs, not engineers",
-          "Too much context-switching between tools",
-          "Sprint planning feels like busywork",
-          "Need better visibility into team capacity and velocity",
-        ],
+        painPoints: ["Existing PM tools are designed for PMs, not engineers", "Too much context-switching between tools", "Sprint planning feels like busywork", "Need better visibility into team capacity and velocity"],
         contentPreferences: ["Technical blog posts", "Product comparison guides", "Developer community content (Reddit, HN)", "GitHub integrations documentation"],
       },
       {
@@ -473,12 +470,7 @@ export const clients: Client[] = [
         companySize: "100-1,000 employees",
         industry: "SaaS, Fintech, Healthtech",
         ageRange: "35-50",
-        painPoints: [
-          "Scaling engineering processes across multiple teams",
-          "Justifying tool consolidation to the CFO",
-          "Need enterprise-grade security and compliance",
-          "Want data-driven engineering metrics (DORA, cycle time)",
-        ],
+        painPoints: ["Scaling engineering processes across multiple teams", "Justifying tool consolidation to the CFO", "Need enterprise-grade security and compliance", "Want data-driven engineering metrics (DORA, cycle time)"],
         contentPreferences: ["Whitepapers and benchmark reports", "Case studies from similar-sized companies", "Webinars with engineering leaders", "ROI calculators and comparison tools"],
       },
     ],
@@ -523,8 +515,8 @@ export const clients: Client[] = [
       "We're like [competitor] but better",
     ],
 
-    targetKeywords: ["project management for engineers", "engineering team tools", "sprint planning software", "DORA metrics dashboard", "developer project management"],
-    competitorUrls: ["https://monday.com", "https://asana.com", "https://linear.app", "https://shortcut.com"],
-    seoNotes: "Onboarding -- SEO strategy TBD. Initial focus should be product-led content targeting engineering-specific pain points. Comparison pages (SouthStack vs. Linear, vs. Jira, vs. Asana) are high priority for bottom-funnel capture.",
+    teamNotes: [
+      { id: "tn-ss-1", author: "Bin Cochran", date: "2026-03-28", text: "Kickoff call completed. Marcus is very engaged. Brand voice workshop scheduled for April 3rd. Need to prepare competitor analysis for the meeting." },
+    ],
   },
 ];
