@@ -22,7 +22,7 @@ function daysUntil(d: string) { const t = new Date(); t.setHours(0,0,0,0); const
 /* ── Wizard data ── */
 interface WizardData {
   name: string; industry: string; website: string; status: "Active"|"Onboarding"|"Paused";
-  color: string; initials: string;
+  color: string; customColor: string; initials: string;
   pocName: string; pocEmail: string; pocPhone: string; pocRole: string; pocLinkedin: string;
   renewalDate: string; scopeDocumentName: string; notes: string;
   brandPositioning: string; onVoiceText: string; offVoiceText: string;
@@ -31,7 +31,7 @@ interface WizardData {
 }
 
 function emptyWizard(): WizardData {
-  return { name:"", industry:"SaaS/Tech", website:"", status:"Onboarding", color:gradientOptions[0], initials:"",
+  return { name:"", industry:"SaaS/Tech", website:"", status:"Onboarding", color:gradientOptions[0], customColor:"", initials:"",
     pocName:"", pocEmail:"", pocPhone:"", pocRole:"", pocLinkedin:"",
     renewalDate:"", scopeDocumentName:"", notes:"",
     brandPositioning:"", onVoiceText:"", offVoiceText:"", icps:[],
@@ -40,7 +40,7 @@ function emptyWizard(): WizardData {
 
 function clientToWizard(c: Client): WizardData {
   const primary = c.contacts.find((x) => x.isPrimary) || c.contacts[0];
-  return { name:c.name, industry:c.industry, website:c.website, status:c.status, color:c.color, initials:c.initials,
+  return { name:c.name, industry:c.industry, website:c.website, status:c.status, color:c.color, customColor:c.customColor, initials:c.initials,
     pocName:primary?.name||"", pocEmail:primary?.email||"", pocPhone:primary?.phone||"", pocRole:primary?.role||"", pocLinkedin:primary?.linkedin||"",
     renewalDate:c.renewalDate, scopeDocumentName:c.scopeDocumentName, notes:c.notes,
     brandPositioning:c.brandPositioning, onVoiceText:c.onVoiceExamples.join("\n"),
@@ -55,7 +55,7 @@ function wizardToClient(w: WizardData, existingId?: string, existing?: Client): 
   const primaryContact: Contact = { id: existing?.contacts[0]?.id || Date.now().toString(), name:w.pocName, role:w.pocRole, email:w.pocEmail, phone:w.pocPhone, linkedin:w.pocLinkedin, twitter:"", isPrimary:true };
   const otherContacts = existing?.contacts.filter((c)=>!c.isPrimary) || [];
   return {
-    id: existingId || Date.now().toString(), name:w.name, industry:w.industry, website:w.website, status:w.status, color:w.color, initials,
+    id: existingId || Date.now().toString(), name:w.name, industry:w.industry, website:w.website, status:w.status, color:w.color, customColor:w.customColor, initials,
     contacts: [primaryContact, ...otherContacts], leaders: existing?.leaders || [],
     renewalDate:w.renewalDate, scopeDocumentName:w.scopeDocumentName, notes:w.notes,
     brandPositioning:w.brandPositioning, toneAttributes: existing?.toneAttributes || [],
@@ -189,7 +189,7 @@ export default function ClientHub() {
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${client.color} text-lg font-bold text-white shadow-lg`}>{client.initials}</div>
+            <div className={`flex h-14 w-14 items-center justify-center rounded-2xl text-lg font-bold text-white shadow-lg ${client.customColor ? "" : `bg-gradient-to-br ${client.color}`}`} style={client.customColor ? {background:client.customColor} : undefined}>{client.initials}</div>
             <div>
               <div className="flex items-center gap-3">
                 <h1 className={`text-[28px] font-bold tracking-tight ${tp}`}>{client.name}</h1>
@@ -661,7 +661,19 @@ export default function ClientHub() {
             {wizardStep===0 && <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3"><div><label className={labelClass}>Name *</label><input value={wizardData.name} onChange={e=>{updateWizard("name",e.target.value);updateWizard("initials",e.target.value.split(/\s+/).map(w=>w[0]).join("").toUpperCase().slice(0,2));}} className={inputClass} /></div><div><label className={labelClass}>Website</label><input value={wizardData.website} onChange={e=>updateWizard("website",e.target.value)} className={inputClass} placeholder="https://" /></div></div>
               <div className="grid grid-cols-2 gap-3"><div><label className={labelClass}>Industry</label><select value={wizardData.industry} onChange={e=>updateWizard("industry",e.target.value)} className={inputClass}>{industryOptions.map(i=><option key={i} value={i}>{i}</option>)}</select></div><div><label className={labelClass}>Status</label><select value={wizardData.status} onChange={e=>updateWizard("status",e.target.value)} className={inputClass}><option value="Active">Active</option><option value="Onboarding">Onboarding</option><option value="Paused">Paused</option></select></div></div>
-              <div><label className={labelClass}>Color</label><div className="flex gap-2">{gradientOptions.map(g=>(<button key={g} onClick={()=>updateWizard("color",g)} className={`h-7 w-7 rounded-lg bg-gradient-to-br ${g} ${wizardData.color===g?"ring-2 ring-blue-500 ring-offset-2":""}`} style={{["--tw-ring-offset-color" as string]:dark?"#1c1c1e":"#fff"} as React.CSSProperties} />))}</div></div>
+              <div>
+                <label className={labelClass}>Color</label>
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-1.5 flex-wrap">
+                    {gradientOptions.map(g=>(<button key={g} onClick={()=>{updateWizard("color",g);updateWizard("customColor","");}} className={`h-7 w-7 rounded-lg bg-gradient-to-br ${g} ${!wizardData.customColor && wizardData.color===g?"ring-2 ring-blue-500 ring-offset-2":""}`} style={{["--tw-ring-offset-color" as string]:dark?"#1c1c1e":"#fff"} as React.CSSProperties} />))}
+                  </div>
+                  <div className={`flex items-center gap-2 rounded-xl px-3 py-1.5 ${dark?"bg-white/[0.04] border border-white/[0.08]":"bg-white border border-neutral-200"}`}>
+                    <div className="h-6 w-6 rounded-md border shrink-0" style={{background:wizardData.customColor||"#888", borderColor:dark?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.1)"}} />
+                    <input type="text" value={wizardData.customColor} onChange={e=>{updateWizard("customColor",e.target.value);}} placeholder="#HEX" className={`w-20 text-[13px] bg-transparent outline-none ${dark?"text-white placeholder-neutral-600":"text-neutral-900 placeholder-neutral-400"}`} />
+                  </div>
+                </div>
+                {wizardData.customColor && <p className={`mt-1.5 text-[11px] ${dark?"text-blue-400":"text-blue-500"}`}>Using custom hex color</p>}
+              </div>
               <div className="grid grid-cols-2 gap-3"><div><label className={labelClass}>Primary POC Name</label><input value={wizardData.pocName} onChange={e=>updateWizard("pocName",e.target.value)} className={inputClass} /></div><div><label className={labelClass}>POC Role</label><input value={wizardData.pocRole} onChange={e=>updateWizard("pocRole",e.target.value)} className={inputClass} /></div></div>
               <div className="grid grid-cols-3 gap-3"><div><label className={labelClass}>Email</label><input value={wizardData.pocEmail} onChange={e=>updateWizard("pocEmail",e.target.value)} className={inputClass} /></div><div><label className={labelClass}>Phone</label><input value={wizardData.pocPhone} onChange={e=>updateWizard("pocPhone",e.target.value)} className={inputClass} /></div><div><label className={labelClass}>LinkedIn</label><input value={wizardData.pocLinkedin} onChange={e=>updateWizard("pocLinkedin",e.target.value)} className={inputClass} /></div></div>
               <div className="grid grid-cols-2 gap-3"><div><label className={labelClass}>Renewal Date</label><input type="date" value={wizardData.renewalDate} onChange={e=>updateWizard("renewalDate",e.target.value)} className={inputClass} /></div><div><label className={labelClass}>Scope Doc</label><input value={wizardData.scopeDocumentName} onChange={e=>updateWizard("scopeDocumentName",e.target.value)} className={inputClass} /></div></div>

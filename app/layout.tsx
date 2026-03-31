@@ -87,7 +87,7 @@ function Sidebar() {
           const active = c.id === activeClient.id;
           return (
             <button key={c.id} onClick={() => setActiveClientId(c.id)} className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all ${active ? (dark ? "bg-white/[0.08]" : "bg-black/[0.04]") : (dark ? "hover:bg-white/[0.04]" : "hover:bg-black/[0.02]")}`}>
-              <div className={`flex h-8 w-8 items-center justify-center rounded-[10px] bg-gradient-to-br ${c.color} text-[11px] font-bold text-white shrink-0`}>{c.initials}</div>
+              <div className={`flex h-8 w-8 items-center justify-center rounded-[10px] text-[11px] font-bold text-white shrink-0 ${c.customColor ? "" : `bg-gradient-to-br ${c.color}`}`} style={c.customColor ? {background:c.customColor} : undefined}>{c.initials}</div>
               <div className="flex-1 min-w-0">
                 <p className={`text-[13px] font-medium truncate ${active ? (dark ? "text-white" : "text-neutral-900") : (dark ? "text-neutral-400" : "text-neutral-600")}`}>{c.name}</p>
                 <p className={`text-[10px] truncate ${dark ? "text-neutral-600" : "text-neutral-400"}`}>{c.industry}</p>

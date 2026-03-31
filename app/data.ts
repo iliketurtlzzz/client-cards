@@ -55,6 +55,7 @@ export interface Client {
   website: string;
   status: "Active" | "Onboarding" | "Paused";
   color: string;
+  customColor: string;
   initials: string;
   contacts: Contact[];
   leaders: Leader[];
@@ -93,6 +94,7 @@ export const defaultClients: Client[] = [
     website: "https://marketwake.com",
     status: "Active",
     color: "from-blue-500 to-purple-600",
+    customColor: "",
     initials: "MW",
     contacts: [
       { id: "c-mw-1", name: "Bin Cochran", role: "Director of Strategy", email: "bin@marketwake.com", phone: "404-555-0101", linkedin: "https://linkedin.com/in/bincochran", twitter: "", isPrimary: true },
@@ -151,6 +153,7 @@ export const defaultClients: Client[] = [
     website: "https://peachtreedental.com",
     status: "Active",
     color: "from-teal-400 to-cyan-500",
+    customColor: "",
     initials: "PD",
     contacts: [
       { id: "c-pd-1", name: "Dr. Sarah Chen", role: "Practice Owner", email: "sarah@peachtreedental.com", phone: "404-555-0200", linkedin: "https://linkedin.com/in/drsarahchen", twitter: "", isPrimary: true },
@@ -203,6 +206,7 @@ export const defaultClients: Client[] = [
     website: "https://cuttingedgefirewood.com",
     status: "Active",
     color: "from-orange-500 to-red-500",
+    customColor: "",
     initials: "CE",
     contacts: [
       { id: "c-ce-1", name: "Michael Harris", role: "Founder & CEO", email: "michael@cuttingedgefirewood.com", phone: "404-555-0300", linkedin: "https://linkedin.com/in/michaelharris", twitter: "https://twitter.com/caborfire", isPrimary: true },
@@ -253,6 +257,7 @@ export const defaultClients: Client[] = [
     website: "https://southstack.io",
     status: "Onboarding",
     color: "from-violet-500 to-indigo-600",
+    customColor: "",
     initials: "SS",
     contacts: [
       { id: "c-ss-1", name: "Marcus Johnson", role: "CEO & Co-founder", email: "marcus@southstack.io", phone: "404-555-0400", linkedin: "https://linkedin.com/in/marcusjohnson", twitter: "https://twitter.com/marcusj", isPrimary: true },
